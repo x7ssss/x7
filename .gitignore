@@ -1,0 +1,25 @@
+# Binaries and build artifacts
+bin/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Temporary and local scratch directories
+.sources/
+scratch/
+*.log
+
+# Terraform local state and locks
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tflock
+
+# IDEs and OS artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

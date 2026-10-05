@@ -100,3 +100,74 @@ func RenderCard(w io.Writer, title string, entries [][2]string) {
 	}
 	fmt.Fprintln(w, border)
 }
+
+// RenderKeyValueBlock renders a brutalist key-value summary block.
+func RenderKeyValueBlock(w io.Writer, title string, entries [][2]string) {
+	upperTitle := strings.ToUpper(strings.TrimSpace(title))
+	maxKeyLen := 0
+	for _, e := range entries {
+		if len(e[0]) > maxKeyLen {
+			maxKeyLen = len(e[0])
+		}
+	}
+
+	sepLen := maxKeyLen + 40
+	if sepLen < len(upperTitle)+6 {
+		sepLen = len(upperTitle) + 6
+	}
+
+	border := "+" + strings.Repeat("-", sepLen) + "+"
+	fmt.Fprintln(w, border)
+	fmt.Fprintf(w, "| %-*s |\n", sepLen-2, upperTitle)
+	fmt.Fprintln(w, border)
+
+	for _, e := range entries {
+		line := fmt.Sprintf("%-*s : %s", maxKeyLen, e[0], e[1])
+		if len(line) > sepLen-2 {
+			line = line[:sepLen-5] + "..."
+		}
+		fmt.Fprintf(w, "| %-*s |\n", sepLen-2, line)
+	}
+	fmt.Fprintln(w, border)
+}
+
+// SimpleTable renders minimalist tabular data with string headers.
+type SimpleTable struct {
+	Headers []string
+	Rows    [][]string
+}
+
+// NewSimpleTable creates a new SimpleTable with the given column headers.
+func NewSimpleTable(headers ...string) *SimpleTable {
+	upperHeaders := make([]string, len(headers))
+	for i, h := range headers {
+		upperHeaders[i] = strings.ToUpper(strings.TrimSpace(h))
+	}
+	return &SimpleTable{
+		Headers: upperHeaders,
+		Rows:    make([][]string, 0),
+	}
+}
+
+// AddRow adds a row of string columns to SimpleTable.
+func (st *SimpleTable) AddRow(cols ...string) {
+	row := make([]string, len(cols))
+	for i, c := range cols {
+		row[i] = strings.TrimSpace(c)
+	}
+	st.Rows = append(st.Rows, row)
+}
+
+// Render renders the SimpleTable to the given writer.
+func (st *SimpleTable) Render(w io.Writer) {
+	if len(st.Headers) == 0 {
+		return
+	}
+	cols := make([]TableColumn, len(st.Headers))
+	for i, h := range st.Headers {
+		cols[i] = TableColumn{Title: h, Width: len(h)}
+	}
+	tbl := NewTable(cols...)
+	tbl.Rows = st.Rows
+	tbl.Render(w)
+}
